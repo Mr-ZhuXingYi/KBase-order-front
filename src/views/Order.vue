@@ -2,6 +2,7 @@
   <el-table
       :data="tableData"
       style="width: 100%"
+      align="center"
   >
     <el-table-column
         type="index"
@@ -10,49 +11,52 @@
         align="center">
     </el-table-column>
     <el-table-column
-        label="名称"
+        label="订单号"
         sortable
         width="150"
         align="center">
       <template slot-scope="scope">
         <el-tag @click.native="viewKb(scope.row)">
-          {{ scope.row.kb_name }}
+          {{ scope.row.order_num }}
         </el-tag>
       </template>
     </el-table-column>
     <el-table-column
-        prop="join_time"
-        label="加入时间"
+        prop="create_time"
+        label="提交时间"
         sortable
         width="180"
         align="center">
     </el-table-column>
     <el-table-column
-        prop="can_edit"
-        label="能否编辑"
+        prop="order_amount"
+        label="订单金额"
         sortable
         width="100"
         align="center"
     >
     </el-table-column>
     <el-table-column
-        width="180px"
-        label="操作"
+        prop="goods_name"
+        label="商品名"
+        sortable
+        width="100"
         align="center"
     >
-      <template slot-scope="scope">
-        <el-button type="success" size="mini" @click="mangerKb(scope.row)">
-          管理
-        </el-button>
-        <el-button type="success" v-if="scope.row.can_edit==='Y'" size="mini" @click="editKb(scope.row)">
-          添加文档
-        </el-button>
-      </template>
-
     </el-table-column>
+
     <el-table-column
-        prop="creator_id"
-        label="创建者"
+        prop="goods_prices"
+        label="商品价格"
+        sortable
+        width="100"
+        align="center"
+    >
+    </el-table-column>
+
+    <el-table-column
+        prop="goods_count"
+        label="商品数量"
         sortable
         width="100"
         align="center"
@@ -67,13 +71,48 @@ export default {
   data() {
     return {
       tableData: [{
-        join_time: '2021-01-21 14:45:50',
-        kb_name: 'Linux',
-        kb_id: 'http://www.baidu.com?search=3'
+        order_num: '1111111',
+        order_amount: '560',
+        goods_name: 'http://www.baidu.com?search=3'
       }]
     }
   },
   methods: {
+    nextPage: function (search, flag, size) {
+      clearInterval(this.timeOut);
+      if (this.current === 1 && flag === 0 && search === "" && this.preSearch === "") {
+        return
+      }
+      let cursor = 0
+      if (flag === -1) {
+        this.preCurs.pop()
+        cursor = this.preCurs.pop()
+        this.current -= 1
+
+      } else if (flag === 1) {
+        cursor = this.nextCursor
+        this.current += 1
+      } else {
+        this.current = 1
+      }
+      this.axios.get(this.api.OrderList, {
+        params: {key: 2}
+      }).then(res => {
+        this.data = res.data.data
+        this.nextCursor = res.data.next
+        this.nextDisable = this.nextCursor === 0;
+        this.preCurs.push(res.data.current)
+
+      })
+
+      this.timeOut = setInterval(() => {
+        this.update()
+      }, 1000);
+      this.preSearch = search
+      this.preDisable = this.current <= 1;
+    },
+
+
     editKb: function (kb) {
       this.$router.push({name: 'edit', query: {id: kb.kb_id}})
     },
