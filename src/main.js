@@ -5,6 +5,7 @@ import router from './router'
 import store from './store'
 import axios from 'axios'
 import api from './api/order.js'
+import 'element-ui/lib/theme-chalk/index.css';
 
 
 Vue.use(ElementUI);
